@@ -19,7 +19,8 @@ set -euo pipefail
 
 # ── Configuration (override via env) ─────────────────────────────────────────
 CTID="${CTID:-}"                                   # container id (default: next free)
-HOSTNAME="${HOSTNAME:-restic-rest}"                # container hostname
+# NB: not HOSTNAME — that name collides with the shell's built-in $HOSTNAME.
+CT_HOSTNAME="${CT_HOSTNAME:-restic-rest}"          # container hostname
 MEMORY="${MEMORY:-256}"                            # RAM in MB
 ROOTFS_STORAGE="${ROOTFS_STORAGE:-local-lvm}"      # storage for the rootfs
 ROOTFS_SIZE="${ROOTFS_SIZE:-2}"                    # rootfs size in GB
@@ -67,9 +68,9 @@ mkdir -p "$REPO_PATH"
 chown 100000:100000 "$REPO_PATH"
 
 # ── Create the container ──────────────────────────────────────────────────────
-info "Creating LXC $CTID ($HOSTNAME)…"
+info "Creating LXC $CTID ($CT_HOSTNAME)…"
 pct create "$CTID" "$TEMPLATE" \
-  --hostname "$HOSTNAME" \
+  --hostname "$CT_HOSTNAME" \
   --cores 1 --memory "$MEMORY" --swap "$MEMORY" \
   --rootfs "${ROOTFS_STORAGE}:${ROOTFS_SIZE}" \
   --net0 "name=eth0,bridge=${BRIDGE},ip=dhcp" \
@@ -91,7 +92,7 @@ tar xzf "\${F}.tar.gz"
 install -m755 "\${F}/rest-server" /usr/local/bin/rest-server
 mkdir -p "${MOUNT_POINT}"
 htpasswd -bBc "${MOUNT_POINT}/.htpasswd" "${REST_USER}" "${REST_PASS}"
-rest-server --version
+/usr/local/bin/rest-server --version
 INSTALL
 pct exec "$CTID" -- sh /tmp/install.sh
 
@@ -117,7 +118,7 @@ STATUS="$(pct exec "$CTID" -- rc-service rest-server status 2>&1 | tr -d '\n')"
 echo
 info "Done."
 echo    "─────────────────────────────────────────────────────────────"
-echo -e "  Container   : ${CTID} (${HOSTNAME})"
+echo -e "  Container   : ${CTID} (${CT_HOSTNAME})"
 echo -e "  Address     : ${IP}:${REST_PORT}"
 echo -e "  Storage     : ${REPO_PATH}  ->  ${MOUNT_POINT}"
 echo -e "  Append-only : $([ "$APPEND_ONLY" = "1" ] && echo yes || echo no)"
