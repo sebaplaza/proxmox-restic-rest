@@ -54,14 +54,15 @@ CTID=120 REPO_PATH=/mnt/tank/backups REST_USER=laptop \
 ## Using it from a client
 
 ```sh
-export RESTIC_REPOSITORY='rest:http://backup:PASSWORD@<lxc-ip>:8000/'
+# With --private-repos the path MUST start with the username (here: "backup").
+export RESTIC_REPOSITORY='rest:http://backup:PASSWORD@<lxc-ip>:8000/backup/'
 export RESTIC_PASSWORD='your-encryption-password'   # encrypts the repo; keep it safe
 restic init
 restic backup ~/Documents
 ```
 
 In [Backrest](https://github.com/garethgeorge/backrest), add a repo with the same
-`rest:http://…` URI and encryption password.
+`rest:http://…/<username>/` URI and encryption password.
 
 ## Pruning with append-only
 

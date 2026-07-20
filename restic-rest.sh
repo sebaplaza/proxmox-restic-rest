@@ -125,10 +125,11 @@ echo -e "  Append-only : $([ "$APPEND_ONLY" = "1" ] && echo yes || echo no)"
 echo -e "  Service     : ${STATUS}"
 echo    "─────────────────────────────────────────────────────────────"
 echo -e "  Repository URL for restic / Backrest clients:"
-echo -e "    ${c_green}rest:http://${REST_USER}:${REST_PASS}@${IP}:${REST_PORT}/${c_reset}"
+echo -e "    ${c_green}rest:http://${REST_USER}:${REST_PASS}@${IP}:${REST_PORT}/${REST_USER}/${c_reset}"
+echo -e "  (with --private-repos the path MUST start with the username)"
 echo
 echo -e "  Initialise it once from a client:"
-echo -e "    export RESTIC_REPOSITORY='rest:http://${REST_USER}:${REST_PASS}@${IP}:${REST_PORT}/'"
+echo -e "    export RESTIC_REPOSITORY='rest:http://${REST_USER}:${REST_PASS}@${IP}:${REST_PORT}/${REST_USER}/'"
 echo -e "    export RESTIC_PASSWORD='<your-encryption-password>'"
 echo -e "    restic init"
 echo
