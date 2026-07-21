@@ -58,6 +58,8 @@ sleep 6
 # Inside: a user/group with the matching id, and run rest-server as it.
 pct exec "$CTID" -- sh -c "addgroup -g ${GID_N} restic 2>/dev/null || true; adduser -D -H -u ${UID_N} -G restic restic 2>/dev/null || true"
 pct exec "$CTID" -- sh -c 'grep -q "^command_user=" /etc/init.d/rest-server || sed -i "/^command=/a command_user=\"restic:restic\"" /etc/init.d/rest-server'
+# rest-server now runs as the unprivileged user; make its logfile writable by it.
+pct exec "$CTID" -- sh -c 'touch /var/log/rest-server.log; chown restic:restic /var/log/rest-server.log'
 pct exec "$CTID" -- rc-service rest-server restart
 sleep 2
 
