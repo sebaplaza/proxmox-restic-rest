@@ -31,7 +31,7 @@ Everything is overridable via environment variables:
 | Variable         | Default                          | Description                              |
 |------------------|----------------------------------|------------------------------------------|
 | `CTID`           | next free id                     | Container ID                             |
-| `HOSTNAME`       | `restic-rest`                    | Container hostname                       |
+| `CT_HOSTNAME`    | `restic-rest`                    | Container hostname                       |
 | `MEMORY`         | `256`                            | RAM in MB                                |
 | `ROOTFS_STORAGE` | `local-lvm`                      | Storage backing the rootfs              |
 | `ROOTFS_SIZE`    | `2`                              | Rootfs size in GB                        |
@@ -67,14 +67,21 @@ In [Backrest](https://github.com/garethgeorge/backrest), add a repo with the sam
 ## Pruning with append-only
 
 Because clients can't delete, retention (`restic forget --prune`) must run
-**server-side**. Add a cron job inside the container that operates on the repo
-directly on disk (the append-only restriction only applies to the HTTP layer):
+**server-side**, operating on the repo directly on disk (the append-only
+restriction only applies to the HTTP layer).
+
+`prune.sh` sets this up for you — it installs a weekly cron inside the
+container, auto-detects the repo, and reads the encryption password from
+`/root/.rpass`. Run it **inside the LXC**:
 
 ```sh
-# inside the container, e.g. /etc/periodic/daily/prune
-restic -r /mnt/repo/<username> forget --prune \
-  --keep-daily 7 --keep-weekly 4 --keep-monthly 6
+echo '<repo-encryption-password>' > /root/.rpass
+curl -fsSL https://raw.githubusercontent.com/sebaplaza/proxmox-restic-rest/main/prune.sh | sh
 ```
+
+Retention defaults to `--keep-hourly 24 --keep-daily 30 --keep-monthly 12`;
+override with the `KEEP` env var. The cron runs weekly (Sun 03:00) via
+`/etc/periodic/weekly/restic-prune`.
 
 ## Notes
 
